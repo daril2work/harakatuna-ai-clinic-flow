@@ -31,12 +31,6 @@ export function ClinicalInput({ onAnalyze, isAnalyzing }: ClinicalInputProps) {
     }
   };
 
-  const exampleText = `Patient: 45-year-old female
-Chief Complaint: Chest pain and shortness of breath for 3 days
-Vitals: BP 140/90, HR 110, RR 22, Temp 98.6°F, O2 Sat 94%
-Labs: Troponin I elevated at 0.8 ng/mL, BNP 450 pg/mL
-EKG: ST-segment depression in leads V4-V6`;
-
   return (
     <Card className="shadow-medical border-0 gradient-medical bg-opacity-10 backdrop-blur-sm">
       <CardHeader className="pb-4">
@@ -57,19 +51,6 @@ EKG: ST-segment depression in leads V4-V6`;
             onChange={(e) => setClinicalText(e.target.value)}
             className="min-h-[150px] resize-none border-accent/30 focus:border-primary/50 bg-card/80 backdrop-blur-sm"
           />
-          
-          {!clinicalText && (
-            <div className="absolute top-16 left-4 right-4 text-xs text-muted-foreground/70 pointer-events-none">
-              <div className="p-3 bg-muted/30 rounded-lg overflow-hidden">
-                <p className="font-medium mb-1">Example:</p>
-                <div className="text-xs leading-relaxed overflow-hidden">
-                  <div className="break-words whitespace-pre-wrap">
-                    {exampleText}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
