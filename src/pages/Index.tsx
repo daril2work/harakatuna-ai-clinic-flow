@@ -1,7 +1,11 @@
+
 import React, { useState } from "react";
 import { UserGreeting } from "@/components/UserGreeting";
 import { ClinicalInput } from "@/components/ClinicalInput";
 import { ResultsDisplay } from "@/components/ResultsDisplay";
+import { StructuredDataView } from "@/components/StructuredDataView";
+import { MedicalScores } from "@/components/MedicalScores";
+import { MedicalDataProcessor, ClinicalData, MedicalScore } from "@/utils/medicalDataProcessor";
 
 interface AnalysisResults {
   differential: string[];
@@ -12,32 +16,59 @@ interface AnalysisResults {
 
 const Index = () => {
   const [results, setResults] = useState<AnalysisResults | null>(null);
+  const [structuredData, setStructuredData] = useState<ClinicalData | null>(null);
+  const [medicalScores, setMedicalScores] = useState<MedicalScore[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const handleAnalyze = async (clinicalText: string) => {
     setIsAnalyzing(true);
     setResults(null);
+    setStructuredData(null);
+    setMedicalScores([]);
+
+    // Process structured data immediately
+    const extractedData = MedicalDataProcessor.extractStructuredData(clinicalText);
+    const calculatedScores = MedicalDataProcessor.calculateMedicalScores(extractedData);
+    
+    setStructuredData(extractedData);
+    setMedicalScores(calculatedScores);
 
     // Simulate API call with realistic delay
     await new Promise(resolve => setTimeout(resolve, 3000));
 
-    // Mock results for demonstration
+    // Enhanced mock results based on extracted data
     const mockResults: AnalysisResults = {
       differential: [
         "Acute Coronary Syndrome (NSTEMI)",
-        "Congestive Heart Failure",
+        "Congestive Heart Failure", 
         "Pulmonary Embolism",
         "Pneumonia with respiratory distress"
       ],
-      labInterpretation: "Elevated troponin I (0.8 ng/mL) suggests myocardial injury consistent with NSTEMI. Elevated BNP (450 pg/mL) indicates volume overload or heart failure. Normal temperature rules out sepsis. Oxygen saturation of 94% suggests mild respiratory compromise.",
+      labInterpretation: `Elevated troponin I suggests myocardial injury consistent with NSTEMI. ${
+        extractedData.labs.find(lab => lab.name.toLowerCase().includes('bnp')) 
+          ? 'Elevated BNP indicates volume overload or heart failure. ' 
+          : ''
+      }${
+        extractedData.vitals.oxygenSaturation && extractedData.vitals.oxygenSaturation < 95
+          ? `Oxygen saturation of ${extractedData.vitals.oxygenSaturation}% suggests respiratory compromise. `
+          : ''
+      }Clinical correlation recommended.`,
       therapy: [
         "Antiplatelet therapy: Aspirin 325mg loading dose, then 81mg daily. Clopidogrel 600mg loading dose, then 75mg daily",
-        "Anticoagulation: Enoxaparin 1mg/kg subcutaneous every 12 hours",
+        "Anticoagulation: Enoxaparin 1mg/kg subcutaneous every 12 hours", 
         "Beta-blocker: Metoprolol 25mg BID if hemodynamically stable",
         "ACE inhibitor: Lisinopril 5mg daily (start low dose)",
         "Statin therapy: Atorvastatin 80mg daily for plaque stabilization"
       ],
-      summary: "45-year-old female presenting with acute chest pain and dyspnea with elevated cardiac biomarkers suggestive of NSTEMI. Recommend urgent cardiology consultation, cardiac catheterization, and guideline-directed medical therapy for acute coronary syndrome. Monitor closely for complications and optimize heart failure management."
+      summary: `${extractedData.demographics.age || 'Adult'} ${
+        extractedData.demographics.gender || 'patient'
+      } presenting with ${extractedData.chiefComplaint || 'acute symptoms'} with ${
+        extractedData.labs.some(lab => lab.abnormal) ? 'abnormal cardiac biomarkers' : 'clinical findings'
+      } suggestive of acute coronary syndrome. Recommend urgent cardiology consultation, cardiac catheterization, and guideline-directed medical therapy. ${
+        calculatedScores.some(score => score.severity === 'high') 
+          ? 'High-risk patient requiring close monitoring.' 
+          : 'Monitor closely for complications.'
+      }`
     };
 
     setResults(mockResults);
@@ -54,6 +85,12 @@ const Index = () => {
 
           {/* Input Section */}
           <ClinicalInput onAnalyze={handleAnalyze} isAnalyzing={isAnalyzing} />
+
+          {/* Structured Data Display */}
+          {structuredData && <StructuredDataView data={structuredData} />}
+
+          {/* Medical Scores */}
+          {medicalScores.length > 0 && <MedicalScores scores={medicalScores} />}
 
           {/* Results Section */}
           <ResultsDisplay results={results} isAnalyzing={isAnalyzing} />

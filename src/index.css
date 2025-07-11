@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -42,6 +43,8 @@ All colors MUST be HSL.
     --warning-foreground: 43 89% 20%;
     --success: 142 76% 73%;
     --success-foreground: 142 76% 25%;
+    --info: 202 100% 70%;
+    --info-foreground: 202 100% 25%;
 
     /* Coral accent */
     --coral: 14 78% 75%;
