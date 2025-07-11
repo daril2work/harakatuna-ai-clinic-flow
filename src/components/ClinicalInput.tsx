@@ -1,11 +1,10 @@
+
 import React, { useState } from "react";
-import { Upload, Camera, Settings, Sparkles } from "lucide-react";
+import { Upload, Camera, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Settings } from "./Settings";
 
 interface ClinicalInputProps {
   onAnalyze: (text: string) => void;
@@ -14,7 +13,9 @@ interface ClinicalInputProps {
 
 export function ClinicalInput({ onAnalyze, isAnalyzing }: ClinicalInputProps) {
   const [clinicalText, setClinicalText] = useState("");
-  const [apiKey, setApiKey] = useState("");
+  const [apiKey, setApiKey] = useState(() => {
+    return localStorage.getItem("clinicalAssistant_apiKey") || "";
+  });
 
   const handleAnalyze = () => {
     if (clinicalText.trim()) {
@@ -44,30 +45,7 @@ EKG: ST-segment depression in leads V4-V6`;
             <Sparkles className="h-5 w-5 text-primary" />
             Clinical Input
           </CardTitle>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Settings</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="api-key">Supabase API Key</Label>
-                  <Input
-                    id="api-key"
-                    type="password"
-                    placeholder="Enter your API key"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                  />
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Settings apiKey={apiKey} onApiKeyChange={setApiKey} />
         </div>
       </CardHeader>
       
@@ -82,9 +60,13 @@ EKG: ST-segment depression in leads V4-V6`;
           
           {!clinicalText && (
             <div className="absolute top-16 left-4 right-4 text-xs text-muted-foreground/70 pointer-events-none">
-              <div className="p-3 bg-muted/30 rounded-lg">
+              <div className="p-3 bg-muted/30 rounded-lg overflow-hidden">
                 <p className="font-medium mb-1">Example:</p>
-                <p className="text-xs leading-relaxed">{exampleText}</p>
+                <div className="text-xs leading-relaxed overflow-hidden">
+                  <div className="break-words whitespace-pre-wrap">
+                    {exampleText}
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -101,13 +83,13 @@ EKG: ST-segment depression in leads V4-V6`;
               />
               <Button variant="outline" className="gap-2">
                 <Upload className="h-4 w-4" />
-                Upload
+                <span className="hidden sm:inline">Upload</span>
               </Button>
             </div>
             
             <Button variant="outline" className="gap-2">
               <Camera className="h-4 w-4" />
-              OCR
+              <span className="hidden sm:inline">OCR</span>
             </Button>
           </div>
 
@@ -121,7 +103,7 @@ EKG: ST-segment depression in leads V4-V6`;
             {isAnalyzing ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
-                Analyzing
+                <span className="hidden sm:inline">Analyzing</span>
               </>
             ) : (
               <>
